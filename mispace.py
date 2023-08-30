@@ -2,6 +2,7 @@ import pygame
 import sys
 import random
 import time
+import json
 import tkinter as tk
 from tkinter import ttk
 from classes import Button
@@ -15,6 +16,16 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((Win_h, Win_w))
 pygame.display.set_caption("Space Shooter Game")
 # Load images
+with open("spaceassets\.settings\settings.json","r") as file:
+    data=json.load(file)
+settings_values=[]
+highscore_values=[]
+for obj in data["settings"]:
+    settings_values.append(obj)
+settings_values=settings_values[0]
+for obj in data["highscores"]:
+    highscore_values.append(obj)
+highscore_values=highscore_values[0]
 bg_img = pygame.image.load("spaceassets/background.png").convert()
 spaceship_img = pygame.image.load("spaceassets/player.png").convert_alpha()
 alien_img = pygame.image.load("spaceassets/alien.png").convert_alpha()
@@ -29,6 +40,10 @@ button_quit=pygame.image.load("spaceassets/quit_button.png").convert_alpha()
 endscreen=pygame.image.load("spaceassets/endscreen.png").convert_alpha()
 button_settings=pygame.image.load("spaceassets/settings_button.png").convert_alpha()
 button_continue=pygame.image.load("spaceassets/continue_button.png").convert_alpha()
+music_playing = settings_values["music_playing"]
+shoot_sound = settings_values["shoot_sound"]
+endscreenvar = settings_values["endscreenvar"]
+tips =settings_values["tips"]
 pygame.display.set_icon(icon)
 # Scale images
 heart_img = pygame.transform.scale(heart_img, (33, 33))
@@ -65,11 +80,7 @@ settingbtn=Button(button_settings,208,554,0.2)
 continuebtn=Button(button_continue,208,308,0.2)
 startbtnwidth,extbtnwidth=strtbtn.width,extbtn.width
 atkups=[]
-music_playing=True
-shoot_sound=True
 loop=0
-endscreenvar=True
-tips=True
 class PowerUp:
     def __init__(self, x, y, image):
         self.x = x
@@ -82,11 +93,13 @@ def draw_hearts(num_lives):
     for i in range(num_lives, initial_player_lives):
         screen.blit(lost_heart_img, (i * 33, 0))
 def toggle_music():
-    global music_playing
-    music_playing = not music_playing
+    global music_playing , settings_values
+    music_playing =settings_values['music_playing']= not music_playing
+    update_settings()
 def toggle_shoot():
-    global shoot_sound
-    shoot_sound = not shoot_sound
+    global shoot_sound, settings_values
+    shoot_sound =settings_values["shoot_sound"]= not shoot_sound
+    update_settings()
 def random_powerup():
     if random.randint(0, 1000) == 1 :
         x = random.choice(possible_spawn_location)
@@ -194,8 +207,26 @@ def update_aliens():
                 player_lives -= 1
                 score += 1
 def show_tips():
-    global tips
-    tips= not tips
+    global tips , settings_values
+    tips=settings_values["tips"]= not tips
+    update_settings()
+def update_settings():
+    global data, settings_values, highscore_values
+    data = {
+        "settings": [settings_values],
+        "highscores": [highscore_values]
+    }
+    with open("spaceassets/.settings/settings.json", "w") as jsonfilew:
+        json.dump(data,jsonfilew, indent=4)
+def defaultsettings():
+    global settings_values
+    settings_values = {
+        "music_playing": True,
+        "shoot_sound": True,
+        "endscreenvar": True,
+        "tips": True
+    }
+    update_settings()
 def handle_bullet_shooting():
     global last_bullet_time, loop
     if space_held:
@@ -283,8 +314,9 @@ def check_game_over():
                 time.sleep(1)
                 break
 def endscreentoggle():
-    global endscreenvar
-    endscreenvar=not endscreenvar
+    global endscreenvar , settings_values
+    endscreenvar=settings_values["endscreenvar"]=not endscreenvar
+    update_settings()
 def update_bullet_position():
     for bullet in bullets_list:
         bullet["y"] -= 5  # Move the bullets upwards
@@ -301,7 +333,12 @@ def draw_powerups():
     for atk in atkups:
         if not atk.picked_up:
             screen.blit(atk.image, (atk.x, atk.y))
-
+def update_settings_in_loop():
+    global tips, endscreenvar, shoot_sound, music_playing
+    tips=settings_values["tips"]
+    endscreenvar=settings_values["endscreenvar"]
+    shoot_sound=settings_values["shoot_sound"]
+    music_playing=settings_values["music_playing"]
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -375,7 +412,7 @@ while running:
         # Update the position of the bullets
         update_bullet_position()
         if tips:
-            helptext=font2.render("A/leftarrow=go left, D/rightarrow=go right, z=game is played automaticly(not fun), x=autoshoot (if sore finger),p=pause",True,(255,255,255))
+            helptext=font2.render("A/leftarrow=go left, D/rightarrow=go right, z=game is played automaticly x=autofire,p=pause",True,(255,255,255))
             screen.blit(helptext,(400-(helptext.get_width()/2),770-(helptext.get_height()/2)))
     else:
         screen.fill("darkred")
@@ -399,15 +436,17 @@ while running:
             label2 = tk.Label(settings_window, text="Misc")
             credits_toggle= ttk.Checkbutton(settings_window,text="Credits",variable=tk.BooleanVar(value=endscreenvar), command=endscreentoggle)
             tips_toggle= ttk.Checkbutton(settings_window,text="Tips",variable=tk.BooleanVar(value=tips), command=show_tips)
+            button_default=tk.Button(settings_window,text="Default values",command=defaultsettings)
             music_toggle.pack()
             shoot_toggle.pack()
             label2.pack()
             credits_toggle.pack()
             tips_toggle.pack()
+            button_default.pack()
             # Add this to display the settings window
             settings_window.geometry("150x150")
             settings_window.mainloop()
-
+    update_settings_in_loop()
     check_game_over()
     pygame.display.update()
     clock.tick(fps)
