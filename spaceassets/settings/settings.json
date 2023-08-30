@@ -1,0 +1,16 @@
+{
+    "settings":[
+    {
+        "music_playing" : true,
+        "shoot_sound" : true,
+        "endscreenvar" : true,
+        "tips" : true
+    }
+    ],
+    "highscores":[
+        {
+            "name":"null",
+            "score":0
+        }
+    ]
+}
