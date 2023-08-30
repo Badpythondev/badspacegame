@@ -16,7 +16,7 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((Win_h, Win_w))
 pygame.display.set_caption("Space Shooter Game")
 # Load images
-with open("spaceassets\.settings\settings.json","r") as file:
+with open("spaceassets\settings\settings.json","r") as file:
     data=json.load(file)
 settings_values=[]
 highscore_values=[]
@@ -216,7 +216,7 @@ def update_settings():
         "settings": [settings_values],
         "highscores": [highscore_values]
     }
-    with open("spaceassets/.settings/settings.json", "w") as jsonfilew:
+    with open("spaceassets/settings/settings.json", "w") as jsonfilew:
         json.dump(data,jsonfilew, indent=4)
 def defaultsettings():
     global settings_values
