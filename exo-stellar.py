@@ -14,7 +14,7 @@ fps = 60
 scores_dict = {}
 clock = pygame.time.Clock()
 screen = pygame.display.set_mode((Win_h, Win_w))
-pygame.display.set_caption("Space Shooter Game")
+pygame.display.set_caption("Exo-Stellar Crusades")
 # Load images
 with open("spaceassets\settings\settings.json","r") as file:
     data=json.load(file)
