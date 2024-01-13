@@ -16,7 +16,7 @@ clock = pygame.time.Clock()
 screen = pygame.display.set_mode((Win_h, Win_w))
 pygame.display.set_caption("Exo-Stellar Crusades")
 # Load images
-with open("settings\settings.json","r") as file:
+with open("spaceassets/settings/settings.json","r") as file:
     data=json.load(file)
 settings_values=[]
 highscore_values=[]
